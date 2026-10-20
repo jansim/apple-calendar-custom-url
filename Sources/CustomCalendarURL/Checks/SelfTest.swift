@@ -28,6 +28,25 @@ enum SelfTest {
             check(MeetingLink.parse(input) == nil, "\(input.debugDescription) is rejected")
         }
 
+        print("\nShort names")
+        for (input, expected) in [
+            ("https://zoom.us/my/test", "Zoom: my/test"),
+            ("https://us02web.zoom.us/j/123456789?pwd=secret", "Zoom: j/123456789"),
+            ("https://meet.google.com/abc-defg-hij", "Google: abc-defg-hij"),
+            ("https://teams.microsoft.com/l/meetup-join/xyz", "Microsoft: l/meetup-join/xyz"),
+            ("https://meet.jit.si/team/", "Jit: team"),
+            ("https://www.whereby.com/jane", "Whereby: jane"),
+            ("https://video.example.co.uk/room", "Example: room"),
+            ("https://example.com", "Example"),
+            ("https://example.com/r%C3%A4ume", "Example: räume"),
+            ("http://localhost:8080/room", "Localhost: room"),
+            ("http://192.168.1.10/room", "192.168.1.10: room"),
+            ("zoommtg://zoom.us/join?confno=123", "Zoom: join"),
+        ] {
+            let name = MeetingLink.parse(input).map(MeetingLink.shortName)
+            check(name == expected, "\(input) → \(expected)\(name == expected ? "" : " (got \(name ?? "nil"))")")
+        }
+
         print("\nSettings")
         let jane = MeetingRoom(title: "Jane’s Room", url: "zoom.us/my/jane", details: "Passcode 1234")
         let team = MeetingRoom(title: "Team", url: "https://meet.jit.si/team")
@@ -63,8 +82,8 @@ enum SelfTest {
         }
 
         check(MeetingRoom().id != MeetingRoom().id, "new rooms get distinct identifiers")
-        check(MeetingRoom(title: "  ", url: "zoom.us/my/jane").displayTitle == "zoom.us",
-              "a blank name falls back to the link's host")
+        check(MeetingRoom(title: "  ", url: "https://zoom.us/my/jane").displayTitle == "Zoom: my/jane",
+              "a blank name falls back to a short form of the link")
         check(MeetingRoom(title: "  ").displayTitle == MeetingRoom.untitled, "and without a link, to a placeholder")
         check(MeetingRoom(details: " \n").trimmedDetails == nil, "blank details are left out")
 

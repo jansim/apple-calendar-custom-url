@@ -33,7 +33,7 @@ private struct RoomSection: View {
 
     var body: some View {
         Section {
-            TextField("Name", text: $room.title, prompt: Text(room.link?.host() ?? "Personal Room"))
+            TextField("Name", text: $room.title, prompt: Text(room.suggestedTitle ?? "Personal Room"))
             TextField("Link", text: $room.url, prompt: Text("https://example.com/my-room"))
             TextField("Details", text: $room.details, prompt: Text("Optional, e.g. a passcode"), axis: .vertical)
                 .lineLimit(2...4)

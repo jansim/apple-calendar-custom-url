@@ -21,8 +21,11 @@ public struct MeetingRoom: Codable, Sendable, Equatable, Identifiable {
     public var displayTitle: String {
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
         if !trimmed.isEmpty { return trimmed }
-        return link?.host() ?? MeetingRoom.untitled
+        return suggestedTitle ?? MeetingRoom.untitled
     }
+
+    /// The name a room goes by when none is given, read off its link.
+    public var suggestedTitle: String? { link.map(MeetingLink.shortName) }
 
     public static let untitled = "Untitled Room"
 
@@ -87,5 +90,41 @@ public enum MeetingLink {
             guard host.contains(".") || host == "localhost" else { return nil }
         }
         return components.url
+    }
+
+    /// A short, readable name for a link, whoever hosts it: the site's name
+    /// and the path, as in "Zoom: my/jane" for https://zoom.us/my/jane. The
+    /// query is left out, since that is where passcodes tend to live.
+    public static func shortName(for url: URL) -> String {
+        guard let host = url.host(percentEncoded: false)?.lowercased(), !host.isEmpty else {
+            return url.absoluteString
+        }
+        let site = siteName(host: host)
+        let path = url.path(percentEncoded: false).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        return path.isEmpty ? site : "\(site): \(path)"
+    }
+
+    /// Second-level labels that are part of a country's suffix rather than a
+    /// site's name, as in example.co.uk. Short of shipping the public suffix
+    /// list, these cover the common cases.
+    private static let suffixLabels: Set<String> = ["ac", "co", "com", "edu", "gov", "ne", "net", "or", "org"]
+
+    /// The label naming the site: "zoom" in us02web.zoom.us, "example" in
+    /// meet.example.co.uk.
+    static func siteName(host: String) -> String {
+        // An IP address has no name in it to pull out.
+        if host.contains(":") || host.allSatisfy({ $0.isNumber || $0 == "." }) { return host }
+
+        let labels = host.split(separator: ".").map(String.init)
+        guard labels.count >= 2 else { return capitalized(host) }
+        var index = labels.count - 2
+        if index > 0, labels[labels.count - 1].count == 2, suffixLabels.contains(labels[index]) {
+            index -= 1
+        }
+        return capitalized(labels[index])
+    }
+
+    private static func capitalized(_ label: String) -> String {
+        label.prefix(1).uppercased() + label.dropFirst()
     }
 }

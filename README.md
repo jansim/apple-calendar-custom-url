@@ -28,8 +28,10 @@ ad-hoc signs both.
 
 1. Move `CustomCalendarURL.app` to `/Applications` and open it once, so the system
    registers the extension.
-2. Enter a link and a name for it. Add Link adds another; each one becomes
-   its own entry in Calendar, in the order listed.
+2. Enter a link, and optionally a name for it. Until you type one, the link
+   goes by a short name read off its URL — `https://zoom.us/my/jane` shows as
+   "Zoom: my/jane". Add Link adds another; each one becomes its own entry in
+   Calendar, in the order listed.
 3. In Calendar, click an event's location field and pick a name from the
    video call options. Calendar fills in that link.
 
