@@ -13,6 +13,9 @@
     <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
     <key>CFBundleSupportedPlatforms</key><array><string>MacOSX</string></array>
     <key>LSMinimumSystemVersion</key><string>14.0</string>
+    <!-- Shown next to the rooms in Calendar's video call menu. -->
+    <key>CFBundleIconName</key><string>CalendarCustomURL</string>
+    <key>CFBundleIconFile</key><string>CalendarCustomURL</string>
     <key>NSExtension</key>
     <dict>
         <key>NSExtensionPointIdentifier</key><string>com.apple.calendar.virtualconference</string>

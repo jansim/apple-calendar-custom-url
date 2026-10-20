@@ -28,6 +28,10 @@ xcrun actool Resources/CalendarCustomURL.icon \
     --warnings --errors --output-format human-readable-text
 cp "$BIN/CustomCalendarURLExtension" "$APPEX/Contents/MacOS/CustomCalendarURLExtension"
 cp Resources/Extension/Info.plist "$APPEX/Contents/Info.plist"
+# Calendar draws the provider's icon in its video call menu from the extension
+# bundle, not the app, so the extension carries its own copy of the icon.
+mkdir -p "$APPEX/Contents/Resources"
+cp -R "$APP/Contents/Resources/." "$APPEX/Contents/Resources/"
 
 # Ad-hoc signatures: enough for local use. The extension is signed first, with
 # its sandbox entitlements, since signing the app seals what is inside it.
