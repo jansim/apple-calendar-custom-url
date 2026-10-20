@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- App extensions must be sandboxed. -->
+    <key>com.apple.security.app-sandbox</key><true/>
+    <!-- Lets the sandboxed extension read the settings the app writes to its
+         own defaults. An App Group would need a signing team; this works with
+         the ad-hoc signature Scripts/build.sh makes. -->
+    <key>com.apple.security.temporary-exception.shared-preference.read-only</key>
+    <array>
+        <string>io.github.jansim.CustomURL</string>
+    </array>
+</dict>
+</plist>

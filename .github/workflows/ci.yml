@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    # Same-repo branches already run on push; only fork PRs need this event.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: macos-15
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        id: toolchain
+        run: |
+          swift --version && xcodebuild -version
+          echo "id=$( (swift --version; xcodebuild -version) 2>&1 | shasum | cut -c1-12)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore build cache
+        uses: actions/cache@v4
+        with:
+          path: .build
+          key: build-${{ steps.toolchain.outputs.id }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-${{ github.sha }}
+          restore-keys: |
+            build-${{ steps.toolchain.outputs.id }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-
+
+      # Debug builds incrementally; file hashing because checkout resets mtimes.
+      - name: Build
+        run: Scripts/build.sh debug -Xswiftc -enable-incremental-file-hashing -Xswiftc -warnings-as-errors
+
+      - name: Checks
+        run: build/CustomURL.app/Contents/MacOS/CustomURL --selftest
+
+      - name: Signature and entitlements
+        run: |
+          codesign --verify --deep --strict --verbose=2 build/CustomURL.app
+          codesign -d --entitlements - --xml build/CustomURL.app/Contents/PlugIns/CustomURLExtension.appex > entitlements.plist
+          plutil -extract com.apple.security.app-sandbox raw entitlements.plist | grep -qx true
+          plutil -extract com.apple.security.temporary-exception.shared-preference.read-only.0 raw entitlements.plist \
+            | grep -qx "$(plutil -extract CFBundleIdentifier raw build/CustomURL.app/Contents/Info.plist)"
+
+      # The system's own word on whether Calendar can find the provider.
+      - name: Extension registers
+        run: |
+          pluginkit -a build/CustomURL.app/Contents/PlugIns/CustomURLExtension.appex
+          for _ in 1 2 3 4 5; do
+            pluginkit -m -v -p com.apple.calendar.virtualconference | tee registered.txt
+            grep -q io.github.jansim.CustomURL.ConferenceProvider registered.txt && exit 0
+            sleep 2
+          done
+          echo "::error::the extension did not register with pluginkit"
+          exit 1
+
+  # Some concurrency diagnostics only show up in an optimized build,
+  # so the release build `Scripts/build.sh` makes by default is built as well.
+  release:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: macos-15
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        id: toolchain
+        run: |
+          swift --version && xcodebuild -version
+          echo "id=$( (swift --version; xcodebuild -version) 2>&1 | shasum | cut -c1-12)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore build cache
+        uses: actions/cache@v4
+        with:
+          path: .build
+          key: release-${{ steps.toolchain.outputs.id }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-${{ github.sha }}
+          restore-keys: |
+            release-${{ steps.toolchain.outputs.id }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-
+
+      - name: Build
+        run: Scripts/build.sh release -Xswiftc -enable-incremental-file-hashing -Xswiftc -warnings-as-errors
+
+      - name: Checks
+        run: build/CustomURL.app/Contents/MacOS/CustomURL --selftest
+
+      - name: App
+        uses: actions/upload-artifact@v4
+        with:
+          name: CustomURL.app
+          path: build/CustomURL.app

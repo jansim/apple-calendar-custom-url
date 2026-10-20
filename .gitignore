@@ -1,0 +1,7 @@
+.DS_Store
+.build/
+.swiftpm/
+xcuserdata/
+
+# Everything Scripts/build.sh produces.
+build/
