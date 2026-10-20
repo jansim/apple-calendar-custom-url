@@ -11,13 +11,23 @@ final class ConferenceProvider: EKVirtualConferenceProvider {
         MeetingSettings(defaults: UserDefaults(suiteName: MeetingSettings.domain) ?? .standard)
     }
 
-    override func fetchAvailableRoomTypes() async throws -> [EKVirtualConferenceRoomTypeDescriptor] {
-        Conference.roomTypes(for: settings)
+    // The completion-handler forms rather than the async ones: EventKit's
+    // descriptors are not Sendable, so Swift 6 will not let an async override
+    // return them, and nothing here needs to suspend anyway.
+    override func fetchAvailableRoomTypes(
+        completionHandler: @escaping ([EKVirtualConferenceRoomTypeDescriptor]?, (any Error)?) -> Void
+    ) {
+        completionHandler(Conference.roomTypes(for: settings), nil)
     }
 
     override func fetchVirtualConference(
-        identifier: EKVirtualConferenceRoomTypeIdentifier
-    ) async throws -> EKVirtualConferenceDescriptor {
-        try Conference.descriptor(for: identifier, settings: settings)
+        identifier: EKVirtualConferenceRoomTypeIdentifier,
+        completionHandler: @escaping (EKVirtualConferenceDescriptor?, (any Error)?) -> Void
+    ) {
+        do {
+            completionHandler(try Conference.descriptor(for: identifier, settings: settings), nil)
+        } catch {
+            completionHandler(nil, error)
+        }
     }
 }
