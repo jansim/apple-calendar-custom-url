@@ -14,7 +14,7 @@ jobs:
   test:
     # Same-repo branches already run on push; only fork PRs need this event.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 20
 
     steps:
@@ -65,7 +65,7 @@ jobs:
   # so the release build `Scripts/build.sh` makes by default is built as well.
   release:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 20
 
     steps:

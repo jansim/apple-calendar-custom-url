@@ -13,7 +13,7 @@ No third-party dependencies.
 
 ## Building
 
-Requires Xcode 16 (Swift 6). Runs on macOS 14 or later.
+Requires Xcode 16 or later (Swift 6); CI builds with Xcode 26. Runs on macOS 14 or later.
 
 ```bash
 Scripts/build.sh && open build/CustomURL.app
