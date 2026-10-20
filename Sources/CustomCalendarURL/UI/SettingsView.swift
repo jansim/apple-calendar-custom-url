@@ -1,44 +1,61 @@
 import SwiftUI
 import CustomCalendarURLCore
 
-/// Edits the link in the app's own defaults, which the extension reads.
+/// Edits the rooms, one section each, in the order Calendar lists them.
 struct SettingsView: View {
-    @AppStorage(MeetingSettings.Key.title) private var title = MeetingSettings.defaultTitle
-    @AppStorage(MeetingSettings.Key.url) private var url = ""
-    @AppStorage(MeetingSettings.Key.details) private var details = ""
-
-    @Environment(\.openURL) private var openURL
-
-    private var settings: MeetingSettings {
-        MeetingSettings(title: title, url: url, details: details)
-    }
+    @State private var model = RoomsModel()
 
     var body: some View {
         Form {
-            Section {
-                TextField("Name", text: $title, prompt: Text(MeetingSettings.defaultTitle))
-                TextField("Link", text: $url, prompt: Text("https://example.com/my-room"))
-                TextField("Details", text: $details, prompt: Text("Optional, e.g. a passcode"), axis: .vertical)
-                    .lineLimit(2...4)
-            } footer: {
-                status
+            ForEach($model.rooms) { $room in
+                RoomSection(room: $room) { model.remove(id: room.id) }
             }
 
-            Section("In Calendar") {
-                Text("Click an event’s location field and pick “\(settings.displayTitle)” from the video call options. If it is missing, open Calendar again, and check that the Custom Calendar URL extension is turned on in System Settings › General › Login Items & Extensions.")
+            Section {
+                Button("Add Link", systemImage: "plus") { model.add() }
+            } footer: {
+                Text("Each link with a valid URL shows up by name in the video call options of an event’s location field in Calendar. If they are missing, open Calendar again, and check that the Custom Calendar URL extension is turned on in System Settings › General › Login Items & Extensions.")
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
         .formStyle(.grouped)
         .frame(width: 480)
+        .frame(minHeight: 320, idealHeight: 520)
+    }
+}
+
+private struct RoomSection: View {
+    @Binding var room: MeetingRoom
+    let onRemove: () -> Void
+
+    @Environment(\.openURL) private var openURL
+
+    var body: some View {
+        Section {
+            TextField("Name", text: $room.title, prompt: Text(room.link?.host() ?? "Personal Room"))
+            TextField("Link", text: $room.url, prompt: Text("https://example.com/my-room"))
+            TextField("Details", text: $room.details, prompt: Text("Optional, e.g. a passcode"), axis: .vertical)
+                .lineLimit(2...4)
+        } header: {
+            HStack {
+                Text(room.displayTitle)
+                Spacer()
+                Button("Remove", systemImage: "minus.circle", role: .destructive, action: onRemove)
+                    .labelStyle(.iconOnly)
+                    .buttonStyle(.borderless)
+                    .help("Remove this link")
+            }
+        } footer: {
+            status
+        }
     }
 
     @ViewBuilder private var status: some View {
-        if url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if room.url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             Label("Enter the link to offer in Calendar.", systemImage: "info.circle")
                 .foregroundStyle(.secondary)
-        } else if let link = settings.link {
+        } else if let link = room.link {
             HStack {
                 Label(link.absoluteString, systemImage: "checkmark.circle.fill")
                     .foregroundStyle(.green)

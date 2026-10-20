@@ -1,13 +1,13 @@
 # apple-calendar-custom-url
 
-A minimal macOS app that adds your own meeting link — a personal Zoom room, a
+A minimal macOS app that adds your own meeting links — a personal Zoom room, a
 standing Meet or Jitsi link, anything with a URL — to Apple Calendar's video
 call options, next to FaceTime.
 
 It does this with an
 [`EKVirtualConferenceProvider`](https://developer.apple.com/documentation/eventkit/ekvirtualconferenceprovider)
-extension. The app itself is a single settings window: a name for the entry,
-the link, and optional details such as a passcode.
+extension. The app itself is a single settings window listing your links,
+each with a name, the URL, and optional details such as a passcode.
 
 No third-party dependencies.
 
@@ -28,11 +28,12 @@ ad-hoc signs both.
 
 1. Move `CustomCalendarURL.app` to `/Applications` and open it once, so the system
    registers the extension.
-2. Enter the link, and a name for it.
-3. In Calendar, click an event's location field and pick that name from the
-   video call options. Calendar fills in the link.
+2. Enter a link and a name for it. Add Link adds another; each one becomes
+   its own entry in Calendar, in the order listed.
+3. In Calendar, click an event's location field and pick a name from the
+   video call options. Calendar fills in that link.
 
-If the entry does not show up, quit and reopen Calendar, and check that the
+Links without a valid URL are left out of Calendar. If an entry does not show up, quit and reopen Calendar, and check that the
 extension is turned on in System Settings › General › Login Items &
 Extensions. `pluginkit -m -p com.apple.calendar.virtualconference` lists what
 the system has registered.
@@ -46,11 +47,14 @@ the system has registered.
 | `Sources/CustomCalendarURLExtension` | The `EKVirtualConferenceProvider` subclass |
 | `Resources/` | Both `Info.plist`s and the extension's entitlements |
 
-The app writes its settings to its own defaults. Extensions must be
+The app writes the links, as JSON, to its own defaults. Each link has a
+fixed identifier, which is what Calendar hands back when it is picked, so
+renaming a link or changing its URL keeps it the same entry. Extensions must be
 sandboxed, so the extension reads them through a read-only shared-preference
 entitlement naming the app's bundle identifier; an App Group would do the
 same but needs a signing team. Settings are read on every request, so a
-changed link applies straight away.
+change applies straight away. Events already created keep the link they were
+given, whatever happens to it in the app later.
 
 ## Testing
 
@@ -62,7 +66,7 @@ Scripts/build.sh
 build/CustomCalendarURL.app/Contents/MacOS/CustomCalendarURL --selftest
 ```
 
-`--selftest` checks link parsing, the settings round-trip and everything the
+`--selftest` checks link parsing, saving and reading the links, and everything the
 extension answers Calendar with, and — run from the built app — that the
 extension is embedded with the right extension point, class and identifiers.
 CI additionally verifies the signatures and entitlements, and that `pluginkit`

@@ -1,58 +1,71 @@
 import Foundation
 
-/// The meeting link the extension offers, as the app stores it. The app writes
-/// it and the extension reads it, both through this type, so the keys cannot
-/// drift apart.
-public struct MeetingSettings: Sendable, Equatable {
-    /// The app's bundle identifier, and so its preferences domain. The
-    /// extension is sandboxed and reads this domain through a
-    /// shared-preference entitlement naming the same identifier.
-    public static let domain = "io.github.jansim.CustomCalendarURL"
-
-    public static let defaultTitle = "Personal Room"
-
-    public enum Key {
-        public static let title = "roomTitle"
-        public static let url = "roomURL"
-        public static let details = "roomDetails"
-    }
-
+/// One entry in Calendar's video call options.
+public struct MeetingRoom: Codable, Sendable, Equatable, Identifiable {
+    /// Also the room type identifier Calendar hands back when the entry is
+    /// picked, so it stays fixed when the room is renamed or its link changes.
+    public var id: String
     public var title: String
     public var url: String
     public var details: String
 
-    public init(title: String = MeetingSettings.defaultTitle, url: String = "", details: String = "") {
+    public init(id: String = UUID().uuidString, title: String = "", url: String = "", details: String = "") {
+        self.id = id
         self.title = title
         self.url = url
         self.details = details
-    }
-
-    public init(defaults: UserDefaults) {
-        self.init(
-            title: defaults.string(forKey: Key.title) ?? MeetingSettings.defaultTitle,
-            url: defaults.string(forKey: Key.url) ?? "",
-            details: defaults.string(forKey: Key.details) ?? ""
-        )
-    }
-
-    public func save(to defaults: UserDefaults) {
-        defaults.set(title, forKey: Key.title)
-        defaults.set(url, forKey: Key.url)
-        defaults.set(details, forKey: Key.details)
     }
 
     /// What Calendar shows in its video call menu. Never empty, since a
     /// nameless entry there would be unclickable.
     public var displayTitle: String {
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? MeetingSettings.defaultTitle : trimmed
+        if !trimmed.isEmpty { return trimmed }
+        return link?.host() ?? MeetingRoom.untitled
     }
+
+    public static let untitled = "Untitled Room"
 
     public var link: URL? { MeetingLink.parse(url) }
 
     public var trimmedDetails: String? {
         let trimmed = details.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed.isEmpty ? nil : trimmed
+    }
+}
+
+/// The rooms the extension offers, as the app stores them. The app writes
+/// them and the extension reads them, both through this type, so the storage
+/// format cannot drift apart.
+public struct MeetingSettings: Sendable, Equatable {
+    /// The app's bundle identifier, and so its preferences domain. The
+    /// extension is sandboxed and reads this domain through a
+    /// shared-preference entitlement naming the same identifier.
+    public static let domain = "io.github.jansim.CustomCalendarURL"
+
+    public static let roomsKey = "rooms"
+
+    /// In the order Calendar lists them.
+    public var rooms: [MeetingRoom]
+
+    public init(rooms: [MeetingRoom] = []) {
+        self.rooms = rooms
+    }
+
+    /// Unreadable data reads as no rooms: the extension then offers nothing
+    /// rather than failing every time Calendar asks.
+    public init(defaults: UserDefaults) {
+        let data = defaults.data(forKey: MeetingSettings.roomsKey)
+        self.init(rooms: data.flatMap { try? JSONDecoder().decode([MeetingRoom].self, from: $0) } ?? [])
+    }
+
+    public func save(to defaults: UserDefaults) {
+        guard let data = try? JSONEncoder().encode(rooms) else { return }
+        defaults.set(data, forKey: MeetingSettings.roomsKey)
+    }
+
+    public func room(id: String) -> MeetingRoom? {
+        rooms.first { $0.id == id }
     }
 }
 
