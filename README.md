@@ -35,7 +35,7 @@ ad-hoc signs both. The app icon is compiled with `actool` from
    registers the extension.
 2. Enter a link, and optionally a name for it. Until you type one, the link
    goes by a short name read off its URL — `https://zoom.us/my/jane` shows as
-   "Zoom: my/jane". Add Link adds another; each one becomes its own entry in
+   "Zoom: my/jane". Add Room adds another; each one becomes its own entry in
    Calendar, in the order listed.
 3. In Calendar, click an event's location field and pick a name from the
    video call options. Calendar fills in that link.
