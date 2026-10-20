@@ -45,7 +45,7 @@ enum SelfTest {
         let unset = MeetingSettings()
         check(Conference.roomTypes(for: unset).isEmpty, "no link, no room type")
         check(Conference.roomTypes(for: MeetingSettings(url: "zoom")).isEmpty, "an invalid link, no room type")
-        check(throwsError(.noLink) { try Conference.descriptor(for: Conference.roomTypeIdentifier, settings: unset) },
+        check(throwsError(.noLink) { _ = try Conference.descriptor(for: Conference.roomTypeIdentifier, settings: unset) },
               "no link throws when picked")
 
         let set = MeetingSettings(title: "Jane’s Room", url: "zoom.us/my/jane", details: "Passcode 1234")
@@ -53,7 +53,7 @@ enum SelfTest {
         check(types.count == 1, "one room type")
         check(types.first?.title == "Jane’s Room", "room type carries the name")
         check(types.first?.identifier == Conference.roomTypeIdentifier, "room type carries the identifier")
-        check(throwsError(.unknownRoomType("other")) { try Conference.descriptor(for: "other", settings: set) },
+        check(throwsError(.unknownRoomType("other")) { _ = try Conference.descriptor(for: "other", settings: set) },
               "an unknown room type throws")
 
         if let conference = try? Conference.descriptor(for: Conference.roomTypeIdentifier, settings: set) {
