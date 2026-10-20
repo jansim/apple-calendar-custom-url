@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="-18 -18 36 36">
+  <!-- The chain link from the app icon: two open pills, each hooking its inner
+       end into the other. The second is the first turned 180°. -->
+  <g fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" transform="rotate(-45)">
+    <path d="M -1.5 4 H -6 A 4 4 0 0 1 -6 -4 H -1.5 A 4 4 0 0 1 2.5 0"/>
+    <path d="M 1.5 -4 H 6 A 4 4 0 0 1 6 4 H 1.5 A 4 4 0 0 1 -2.5 0"/>
+  </g>
+</svg>

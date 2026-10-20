@@ -27,7 +27,9 @@ Scripts/build.sh && open build/CustomCalendarURL.app
 The script compiles the SwiftPM targets, assembles `build/CustomCalendarURL.app` with
 the extension embedded at `Contents/PlugIns/CustomCalendarURLExtension.appex`, and
 ad-hoc signs both. The app icon is compiled with `actool` from
-`Resources/CalendarCustomURL.icon`, an Icon Composer file.
+`Resources/CalendarCustomURL.icon`, an Icon Composer file. The extension gets its
+own icon, the app icon's chain link alone, from `Resources/Extension/ConferenceIcon.icon`:
+Calendar shows it next to the rooms in its video call menu.
 
 ## Using it
 
@@ -52,7 +54,7 @@ the system has registered.
 | `Sources/CustomCalendarURLCore` | The settings keys, link parsing, and the descriptors handed to Calendar — shared by both targets |
 | `Sources/CustomCalendarURL` | The settings app, and the `--selftest` suite |
 | `Sources/CustomCalendarURLExtension` | The `EKVirtualConferenceProvider` subclass |
-| `Resources/` | Both `Info.plist`s, the extension's entitlements, and the app icon |
+| `Resources/` | Both `Info.plist`s, the extension's entitlements, and both icons |
 
 The app writes the links, as JSON, to its own defaults. Each link has a
 fixed identifier, which is what Calendar hands back when it is picked, so
