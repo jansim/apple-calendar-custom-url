@@ -45,9 +45,13 @@ jobs:
         run: |
           codesign --verify --deep --strict --verbose=2 build/CustomURL.app
           codesign -d --entitlements - --xml build/CustomURL.app/Contents/PlugIns/CustomURLExtension.appex > entitlements.plist
-          plutil -extract com.apple.security.app-sandbox raw entitlements.plist | grep -qx true
-          plutil -extract com.apple.security.temporary-exception.shared-preference.read-only.0 raw entitlements.plist \
-            | grep -qx "$(plutil -extract CFBundleIdentifier raw build/CustomURL.app/Contents/Info.plist)"
+          cat entitlements.plist; echo
+          # PlistBuddy, not plutil: entitlement keys are full of dots, which
+          # plutil reads as a key path.
+          entitlement() { /usr/libexec/PlistBuddy -c "Print :$1" entitlements.plist; }
+          [ "$(entitlement com.apple.security.app-sandbox)" = true ]
+          [ "$(entitlement com.apple.security.temporary-exception.shared-preference.read-only:0)" = \
+            "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' build/CustomURL.app/Contents/Info.plist)" ]
 
       # The system's own word on whether Calendar can find the provider.
       - name: Extension registers
