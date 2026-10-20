@@ -1,3 +1,5 @@
+<img src="Resources/CalendarCustomURL-iOS-Default-1024x1024@1x.png" width="128" alt="Custom Calendar URL icon">
+
 # apple-calendar-custom-url
 
 A minimal macOS app that adds your own meeting link — a personal Zoom room, a
@@ -22,7 +24,8 @@ Scripts/build.sh && open build/CustomCalendarURL.app
 
 The script compiles the SwiftPM targets, assembles `build/CustomCalendarURL.app` with
 the extension embedded at `Contents/PlugIns/CustomCalendarURLExtension.appex`, and
-ad-hoc signs both.
+ad-hoc signs both. The app icon is compiled with `actool` from
+`Resources/CalendarCustomURL.icon`, an Icon Composer file.
 
 ## Using it
 
@@ -44,7 +47,7 @@ the system has registered.
 | `Sources/CustomCalendarURLCore` | The settings keys, link parsing, and the descriptors handed to Calendar — shared by both targets |
 | `Sources/CustomCalendarURL` | The settings app, and the `--selftest` suite |
 | `Sources/CustomCalendarURLExtension` | The `EKVirtualConferenceProvider` subclass |
-| `Resources/` | Both `Info.plist`s and the extension's entitlements |
+| `Resources/` | Both `Info.plist`s, the extension's entitlements, and the app icon |
 
 The app writes its settings to its own defaults. Extensions must be
 sandboxed, so the extension reads them through a read-only shared-preference

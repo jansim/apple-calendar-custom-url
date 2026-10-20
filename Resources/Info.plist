@@ -14,6 +14,8 @@
     <key>CFBundleSupportedPlatforms</key><array><string>MacOSX</string></array>
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>
+    <key>CFBundleIconName</key><string>CalendarCustomURL</string>
+    <key>CFBundleIconFile</key><string>CalendarCustomURL</string>
     <key>NSPrincipalClass</key><string>NSApplication</string>
     <key>NSHighResolutionCapable</key><true/>
 </dict>

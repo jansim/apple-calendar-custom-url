@@ -43,6 +43,8 @@ jobs:
 
       - name: Signature and entitlements
         run: |
+          test -s build/CustomCalendarURL.app/Contents/Resources/Assets.car
+          test -s build/CustomCalendarURL.app/Contents/Resources/CalendarCustomURL.icns
           codesign --verify --deep --strict --verbose=2 build/CustomCalendarURL.app
           codesign -d --entitlements - --xml build/CustomCalendarURL.app/Contents/PlugIns/CustomCalendarURLExtension.appex > entitlements.plist
           cat entitlements.plist; echo
