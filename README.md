@@ -1,4 +1,6 @@
-<img src="Resources/CalendarCustomURL-iOS-Default-1024x1024@1x.png" width="128" alt="Custom Calendar URL icon">
+<p align="center">
+  <img src="Resources/CalendarCustomURL-iOS-Default-1024x1024@1x.png" width="128" alt="Custom Calendar URL icon">
+</p>
 
 # apple-calendar-custom-url
 
