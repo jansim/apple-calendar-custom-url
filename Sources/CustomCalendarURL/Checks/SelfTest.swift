@@ -6,6 +6,7 @@ import CustomCalendarURLCore
 /// when run from the built app, the bundle wiring Calendar relies on to find
 /// it. Run with `CustomCalendarURL --selftest`; exits non-zero on any failure.
 enum SelfTest {
+    @MainActor
     static func run() -> Int32 {
         var failures = 0
         func check(_ ok: Bool, _ label: String) {
@@ -27,42 +28,92 @@ enum SelfTest {
             check(MeetingLink.parse(input) == nil, "\(input.debugDescription) is rejected")
         }
 
+        print("\nShort names")
+        for (input, expected) in [
+            ("https://zoom.us/my/test", "Zoom: my/test"),
+            ("https://us02web.zoom.us/j/123456789?pwd=secret", "Zoom: j/123456789"),
+            ("https://meet.google.com/abc-defg-hij", "Google: abc-defg-hij"),
+            ("https://teams.microsoft.com/l/meetup-join/xyz", "Microsoft: l/meetup-join/xyz"),
+            ("https://meet.jit.si/team/", "Jit: team"),
+            ("https://www.whereby.com/jane", "Whereby: jane"),
+            ("https://video.example.co.uk/room", "Example: room"),
+            ("https://example.com", "Example"),
+            ("https://example.com/r%C3%A4ume", "Example: räume"),
+            ("http://localhost:8080/room", "Localhost: room"),
+            ("http://192.168.1.10/room", "192.168.1.10: room"),
+            ("zoommtg://zoom.us/join?confno=123", "Zoom: join"),
+        ] {
+            let name = MeetingLink.parse(input).map(MeetingLink.shortName)
+            check(name == expected, "\(input) → \(expected)\(name == expected ? "" : " (got \(name ?? "nil"))")")
+        }
+
         print("\nSettings")
+        let jane = MeetingRoom(title: "Jane’s Room", url: "zoom.us/my/jane", details: "Passcode 1234")
+        let team = MeetingRoom(title: "Team", url: "https://meet.jit.si/team")
+        let draft = MeetingRoom(title: "Draft", url: "zoom")
         let suite = "customcalendarurl-selftest-\(UUID().uuidString)"
         if let defaults = UserDefaults(suiteName: suite) {
             defer { defaults.removePersistentDomain(forName: suite) }
-            check(MeetingSettings(defaults: defaults) == MeetingSettings(), "empty defaults read as the defaults")
-            let saved = MeetingSettings(title: "Jane’s Room", url: "zoom.us/my/jane", details: "Passcode 1234")
+            check(MeetingSettings(defaults: defaults).rooms.isEmpty, "empty defaults read as no rooms")
+            let saved = MeetingSettings(rooms: [jane, draft, team])
             saved.save(to: defaults)
-            check(MeetingSettings(defaults: defaults) == saved, "settings round-trip")
+            check(MeetingSettings(defaults: defaults) == saved, "rooms round-trip, in order")
+            defaults.set(Data("not json".utf8), forKey: MeetingSettings.roomsKey)
+            check(MeetingSettings(defaults: defaults).rooms.isEmpty, "unreadable rooms read as none")
         } else {
             check(false, "scratch defaults suite opens")
         }
-        check(MeetingSettings(title: "  ").displayTitle == MeetingSettings.defaultTitle, "a blank name falls back")
-        check(MeetingSettings(details: " \n").trimmedDetails == nil, "blank details are left out")
+
+        let modelSuite = "customcalendarurl-selftest-\(UUID().uuidString)"
+        if let defaults = UserDefaults(suiteName: modelSuite) {
+            defer { defaults.removePersistentDomain(forName: modelSuite) }
+            let model = RoomsModel(defaults: defaults)
+            check(model.rooms.count == 1 && model.rooms[0].url.isEmpty, "a first launch opens on one empty room")
+            model.rooms[0].url = "zoom.us/my/jane"
+            model.add()
+            model.rooms[1].url = "meet.jit.si/team"
+            check(MeetingSettings(defaults: defaults).rooms.map(\.url) == ["zoom.us/my/jane", "meet.jit.si/team"],
+                  "edits and additions are saved as they happen")
+            model.remove(id: model.rooms[0].id)
+            check(MeetingSettings(defaults: defaults).rooms.map(\.url) == ["meet.jit.si/team"], "removals are saved")
+            check(RoomsModel(defaults: defaults).rooms == model.rooms, "a relaunch reads the saved rooms back")
+        } else {
+            check(false, "scratch defaults suite opens")
+        }
+
+        check(MeetingRoom().id != MeetingRoom().id, "new rooms get distinct identifiers")
+        check(MeetingRoom(title: "  ", url: "https://zoom.us/my/jane").displayTitle == "Zoom: my/jane",
+              "a blank name falls back to a short form of the link")
+        check(MeetingRoom(title: "  ").displayTitle == MeetingRoom.untitled, "and without a link, to a placeholder")
+        check(MeetingRoom(details: " \n").trimmedDetails == nil, "blank details are left out")
 
         print("\nConference")
-        let unset = MeetingSettings()
-        check(Conference.roomTypes(for: unset).isEmpty, "no link, no room type")
-        check(Conference.roomTypes(for: MeetingSettings(url: "zoom")).isEmpty, "an invalid link, no room type")
-        check(throwsError(.noLink) { _ = try Conference.descriptor(for: Conference.roomTypeIdentifier, settings: unset) },
-              "no link throws when picked")
+        check(Conference.roomTypes(for: MeetingSettings()).isEmpty, "no rooms, no room types")
 
-        let set = MeetingSettings(title: "Jane’s Room", url: "zoom.us/my/jane", details: "Passcode 1234")
-        let types = Conference.roomTypes(for: set)
-        check(types.count == 1, "one room type")
-        check(types.first?.title == "Jane’s Room", "room type carries the name")
-        check(types.first?.identifier == Conference.roomTypeIdentifier, "room type carries the identifier")
-        check(throwsError(.unknownRoomType("other")) { _ = try Conference.descriptor(for: "other", settings: set) },
-              "an unknown room type throws")
+        let settings = MeetingSettings(rooms: [jane, draft, team])
+        let types = Conference.roomTypes(for: settings)
+        check(types.map(\.title) == ["Jane’s Room", "Team"], "one room type per usable room, in order")
+        check(types.map(\.identifier) == [jane.id, team.id], "room types carry the rooms' identifiers")
 
-        if let conference = try? Conference.descriptor(for: Conference.roomTypeIdentifier, settings: set) {
+        check(throwsError(.noLink) { _ = try Conference.descriptor(for: draft.id, settings: settings) },
+              "a room without a usable link throws when picked")
+        check(throwsError(.unknownRoomType("gone")) { _ = try Conference.descriptor(for: "gone", settings: settings) },
+              "a deleted room throws when picked")
+
+        if let conference = try? Conference.descriptor(for: jane.id, settings: settings) {
             check(conference.title == "Jane’s Room", "conference carries the name")
             check(conference.urlDescriptors.map(\.url.absoluteString) == ["https://zoom.us/my/jane"],
                   "conference carries the normalized link")
             check(conference.conferenceDetails == "Passcode 1234", "conference carries the details")
         } else {
             check(false, "conference builds")
+        }
+        if let conference = try? Conference.descriptor(for: team.id, settings: settings) {
+            check(conference.urlDescriptors.map(\.url.absoluteString) == ["https://meet.jit.si/team"],
+                  "each room answers with its own link")
+            check(conference.conferenceDetails == nil, "and its own details")
+        } else {
+            check(false, "second conference builds")
         }
 
         if Bundle.main.bundleURL.pathExtension == "app" {
