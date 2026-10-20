@@ -2,11 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleName</key><string>CustomURLExtension</string>
-    <key>CFBundleDisplayName</key><string>Custom URL</string>
-    <key>CFBundleExecutable</key><string>CustomURLExtension</string>
+    <key>CFBundleName</key><string>CustomCalendarURLExtension</string>
+    <key>CFBundleDisplayName</key><string>Custom Calendar URL</string>
+    <key>CFBundleExecutable</key><string>CustomCalendarURLExtension</string>
     <!-- Must extend the app's identifier, or the system will not embed it. -->
-    <key>CFBundleIdentifier</key><string>io.github.jansim.CustomURL.ConferenceProvider</string>
+    <key>CFBundleIdentifier</key><string>io.github.jansim.CustomCalendarURL.ConferenceProvider</string>
     <key>CFBundlePackageType</key><string>XPC!</string>
     <key>CFBundleShortVersionString</key><string>1.0</string>
     <key>CFBundleVersion</key><string>1</string>

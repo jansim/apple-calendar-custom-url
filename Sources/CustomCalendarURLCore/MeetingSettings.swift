@@ -7,7 +7,7 @@ public struct MeetingSettings: Sendable, Equatable {
     /// The app's bundle identifier, and so its preferences domain. The
     /// extension is sandboxed and reads this domain through a
     /// shared-preference entitlement naming the same identifier.
-    public static let domain = "io.github.jansim.CustomURL"
+    public static let domain = "io.github.jansim.CustomCalendarURL"
 
     public static let defaultTitle = "Personal Room"
 

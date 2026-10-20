@@ -33,7 +33,7 @@ public enum ConferenceError: LocalizedError, Equatable {
 
     public var errorDescription: String? {
         switch self {
-        case .noLink: "No meeting link is set. Open Custom URL to set one."
+        case .noLink: "No meeting link is set. Open Custom Calendar URL to set one."
         case .unknownRoomType(let id): "Unknown room type “\(id)”."
         }
     }

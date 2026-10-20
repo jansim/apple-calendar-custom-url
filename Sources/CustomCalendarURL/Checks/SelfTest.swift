@@ -1,10 +1,10 @@
 import Foundation
 import EventKit
-import CustomURLCore
+import CustomCalendarURLCore
 
 /// Headless checks of everything the extension answers Calendar with, plus,
 /// when run from the built app, the bundle wiring Calendar relies on to find
-/// it. Run with `CustomURL --selftest`; exits non-zero on any failure.
+/// it. Run with `CustomCalendarURL --selftest`; exits non-zero on any failure.
 enum SelfTest {
     static func run() -> Int32 {
         var failures = 0
@@ -28,7 +28,7 @@ enum SelfTest {
         }
 
         print("\nSettings")
-        let suite = "customurl-selftest-\(UUID().uuidString)"
+        let suite = "customcalendarurl-selftest-\(UUID().uuidString)"
         if let defaults = UserDefaults(suiteName: suite) {
             defer { defaults.removePersistentDomain(forName: suite) }
             check(MeetingSettings(defaults: defaults) == MeetingSettings(), "empty defaults read as the defaults")
@@ -82,7 +82,7 @@ enum SelfTest {
               "app identifier is the domain the extension reads")
 
         guard let plugins = Bundle.main.builtInPlugInsURL,
-              let appex = Bundle(url: plugins.appendingPathComponent("CustomURLExtension.appex"))
+              let appex = Bundle(url: plugins.appendingPathComponent("CustomCalendarURLExtension.appex"))
         else {
             check(false, "extension is embedded")
             return

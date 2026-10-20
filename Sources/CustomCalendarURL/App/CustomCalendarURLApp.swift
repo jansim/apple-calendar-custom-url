@@ -8,15 +8,15 @@ enum Main {
         if CommandLine.arguments.contains("--selftest") {
             exit(SelfTest.run())
         }
-        CustomURLApp.main()
+        CustomCalendarURLApp.main()
     }
 }
 
-struct CustomURLApp: App {
+struct CustomCalendarURLApp: App {
     @NSApplicationDelegateAdaptor private var delegate: AppDelegate
 
     var body: some Scene {
-        Window("Custom URL", id: "settings") {
+        Window("Custom Calendar URL", id: "settings") {
             SettingsView()
         }
         .windowResizability(.contentSize)

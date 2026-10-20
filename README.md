@@ -16,16 +16,16 @@ No third-party dependencies.
 Requires Xcode 16 or later (Swift 6); CI builds with Xcode 26. Runs on macOS 14 or later.
 
 ```bash
-Scripts/build.sh && open build/CustomURL.app
+Scripts/build.sh && open build/CustomCalendarURL.app
 ```
 
-The script compiles the SwiftPM targets, assembles `build/CustomURL.app` with
-the extension embedded at `Contents/PlugIns/CustomURLExtension.appex`, and
+The script compiles the SwiftPM targets, assembles `build/CustomCalendarURL.app` with
+the extension embedded at `Contents/PlugIns/CustomCalendarURLExtension.appex`, and
 ad-hoc signs both.
 
 ## Using it
 
-1. Move `CustomURL.app` to `/Applications` and open it once, so the system
+1. Move `CustomCalendarURL.app` to `/Applications` and open it once, so the system
    registers the extension.
 2. Enter the link, and a name for it.
 3. In Calendar, click an event's location field and pick that name from the
@@ -40,9 +40,9 @@ the system has registered.
 
 | | |
 | --- | --- |
-| `Sources/CustomURLCore` | The settings keys, link parsing, and the descriptors handed to Calendar — shared by both targets |
-| `Sources/CustomURL` | The settings app, and the `--selftest` suite |
-| `Sources/CustomURLExtension` | The `EKVirtualConferenceProvider` subclass |
+| `Sources/CustomCalendarURLCore` | The settings keys, link parsing, and the descriptors handed to Calendar — shared by both targets |
+| `Sources/CustomCalendarURL` | The settings app, and the `--selftest` suite |
+| `Sources/CustomCalendarURLExtension` | The `EKVirtualConferenceProvider` subclass |
 | `Resources/` | Both `Info.plist`s and the extension's entitlements |
 
 The app writes its settings to its own defaults. Extensions must be
@@ -58,7 +58,7 @@ There is no XCTest bundle; the checks are built into the app binary, like in
 
 ```bash
 Scripts/build.sh
-build/CustomURL.app/Contents/MacOS/CustomURL --selftest
+build/CustomCalendarURL.app/Contents/MacOS/CustomCalendarURL --selftest
 ```
 
 `--selftest` checks link parsing, the settings round-trip and everything the

@@ -39,27 +39,27 @@ jobs:
         run: Scripts/build.sh debug -Xswiftc -enable-incremental-file-hashing -Xswiftc -warnings-as-errors
 
       - name: Checks
-        run: build/CustomURL.app/Contents/MacOS/CustomURL --selftest
+        run: build/CustomCalendarURL.app/Contents/MacOS/CustomCalendarURL --selftest
 
       - name: Signature and entitlements
         run: |
-          codesign --verify --deep --strict --verbose=2 build/CustomURL.app
-          codesign -d --entitlements - --xml build/CustomURL.app/Contents/PlugIns/CustomURLExtension.appex > entitlements.plist
+          codesign --verify --deep --strict --verbose=2 build/CustomCalendarURL.app
+          codesign -d --entitlements - --xml build/CustomCalendarURL.app/Contents/PlugIns/CustomCalendarURLExtension.appex > entitlements.plist
           cat entitlements.plist; echo
           # PlistBuddy, not plutil: entitlement keys are full of dots, which
           # plutil reads as a key path.
           entitlement() { /usr/libexec/PlistBuddy -c "Print :$1" entitlements.plist; }
           [ "$(entitlement com.apple.security.app-sandbox)" = true ]
           [ "$(entitlement com.apple.security.temporary-exception.shared-preference.read-only:0)" = \
-            "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' build/CustomURL.app/Contents/Info.plist)" ]
+            "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' build/CustomCalendarURL.app/Contents/Info.plist)" ]
 
       # The system's own word on whether Calendar can find the provider.
       - name: Extension registers
         run: |
-          pluginkit -a build/CustomURL.app/Contents/PlugIns/CustomURLExtension.appex
+          pluginkit -a build/CustomCalendarURL.app/Contents/PlugIns/CustomCalendarURLExtension.appex
           for _ in 1 2 3 4 5; do
             pluginkit -m -v -p com.apple.calendar.virtualconference | tee registered.txt
-            grep -q io.github.jansim.CustomURL.ConferenceProvider registered.txt && exit 0
+            grep -q io.github.jansim.CustomCalendarURL.ConferenceProvider registered.txt && exit 0
             sleep 2
           done
           echo "::error::the extension did not register with pluginkit"
@@ -93,10 +93,10 @@ jobs:
         run: Scripts/build.sh release -Xswiftc -enable-incremental-file-hashing -Xswiftc -warnings-as-errors
 
       - name: Checks
-        run: build/CustomURL.app/Contents/MacOS/CustomURL --selftest
+        run: build/CustomCalendarURL.app/Contents/MacOS/CustomCalendarURL --selftest
 
       - name: App
         uses: actions/upload-artifact@v4
         with:
-          name: CustomURL.app
-          path: build/CustomURL.app
+          name: CustomCalendarURL.app
+          path: build/CustomCalendarURL.app

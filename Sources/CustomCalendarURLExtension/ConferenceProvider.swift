@@ -1,5 +1,5 @@
 import EventKit
-import CustomURLCore
+import CustomCalendarURLCore
 
 /// The extension's principal class, named in its Info.plist. Calendar asks it
 /// for room types when the video call menu opens, and for the conference once

@@ -1,5 +1,5 @@
 import SwiftUI
-import CustomURLCore
+import CustomCalendarURLCore
 
 /// Edits the link in the app's own defaults, which the extension reads.
 struct SettingsView: View {
@@ -25,7 +25,7 @@ struct SettingsView: View {
             }
 
             Section("In Calendar") {
-                Text("Click an event’s location field and pick “\(settings.displayTitle)” from the video call options. If it is missing, open Calendar again, and check that the Custom URL extension is turned on in System Settings › General › Login Items & Extensions.")
+                Text("Click an event’s location field and pick “\(settings.displayTitle)” from the video call options. If it is missing, open Calendar again, and check that the Custom Calendar URL extension is turned on in System Settings › General › Login Items & Extensions.")
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
