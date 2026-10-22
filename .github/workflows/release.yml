@@ -1,0 +1,41 @@
+name: Release
+
+# Push a tag such as v1.1 to publish a release. The Homebrew cask installs
+# the latest release's CustomCalendarURL.zip.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-26
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # The tag, without its "v", becomes both bundles' version.
+      - name: Version
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          for plist in Resources/Info.plist Resources/Extension/Info.plist; do
+            /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $version" "$plist"
+            /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" "$plist"
+          done
+
+      - name: Build
+        run: Scripts/build.sh release -Xswiftc -warnings-as-errors
+
+      - name: Checks
+        run: build/CustomCalendarURL.app/Contents/MacOS/CustomCalendarURL --selftest
+
+      # ditto, not zip, keeps the signatures and extended attributes intact.
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ditto -c -k --keepParent build/CustomCalendarURL.app CustomCalendarURL.zip
+          gh release create "$GITHUB_REF_NAME" CustomCalendarURL.zip --generate-notes
