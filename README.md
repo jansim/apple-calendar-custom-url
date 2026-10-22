@@ -20,7 +20,7 @@ No third-party dependencies.
 With [Homebrew](https://brew.sh):
 
 ```bash
-brew install --cask jansim/tap/custom-calendar-url
+brew install --cask jansim/tools/custom-calendar-url
 ```
 
 This installs the latest release into `/Applications`. The cask always points
@@ -77,7 +77,6 @@ the system has registered.
 | `Sources/CustomCalendarURL` | The settings app, and the `--selftest` suite |
 | `Sources/CustomCalendarURLExtension` | The `EKVirtualConferenceProvider` subclass |
 | `Resources/` | Both `Info.plist`s, the extension's entitlements, and both icons |
-| `Casks/` | The Homebrew cask, served from the [`jansim/homebrew-tap`](https://github.com/jansim/homebrew-tap) tap |
 
 The app writes the links, as JSON, to its own defaults. Each link has a
 fixed identifier, which is what Calendar hands back when it is picked, so
@@ -108,5 +107,6 @@ accepts the extension.
 
 Push a tag such as `v1.1`. The Release workflow builds the app with that
 version, runs `--selftest`, and publishes `CustomCalendarURL.zip` as a GitHub
-release. The cask installs whichever release is latest, so the tap needs no
-change per release.
+release. The cask, in [`jansim/homebrew-tools`](https://github.com/jansim/homebrew-tools),
+installs whichever release is latest, so the tap needs no change per
+release.
