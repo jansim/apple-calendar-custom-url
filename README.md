@@ -15,7 +15,7 @@ each with a name, the URL, and optional details such as a passcode.
 
 No third-party dependencies.
 
-## Installing
+## Installation
 
 With [Homebrew](https://brew.sh):
 
@@ -35,9 +35,9 @@ unzip it and move `CustomCalendarURL.app` to `/Applications`. macOS will
 refuse to open it at first; allow it under System Settings › Privacy &
 Security › Open Anyway, or run
 `xattr -dr com.apple.quarantine /Applications/CustomCalendarURL.app`.
-Or build it yourself, below.
+Or build it yourself, see [Build](#build).
 
-## Building
+## Build
 
 Requires Xcode 26, for the macOS 26 SDK; CI builds on macOS 26 too. Runs on
 macOS 14 or later.
@@ -53,7 +53,7 @@ ad-hoc signs both. The app icon is compiled with `actool` from
 own icon, the app icon's chain link alone, from `Resources/Extension/ConferenceIcon.icon`:
 Calendar shows it next to the rooms in its video call menu.
 
-## Using it
+## Usage
 
 1. Open `CustomCalendarURL.app` from `/Applications` once, so the system
    registers the extension.
@@ -87,7 +87,7 @@ same but needs a signing team. Settings are read on every request, so a
 change applies straight away. Events already created keep the link they were
 given, whatever happens to it in the app later.
 
-## Testing
+## Tests
 
 There is no XCTest bundle; the checks are built into the app binary, like in
 [doctopus](https://github.com/jansim/doctopus).
@@ -103,7 +103,7 @@ extension is embedded with the right extension point, class and identifiers.
 CI additionally verifies the signatures and entitlements, and that `pluginkit`
 accepts the extension.
 
-## Releasing
+## Releases
 
 Push a tag such as `v1.1`. The Release workflow builds the app with that
 version, runs `--selftest`, and publishes `CustomCalendarURL.zip` as a GitHub
