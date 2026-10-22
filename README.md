@@ -15,6 +15,28 @@ each with a name, the URL, and optional details such as a passcode.
 
 No third-party dependencies.
 
+## Installing
+
+With [Homebrew](https://brew.sh):
+
+```bash
+brew install --cask jansim/tap/custom-calendar-url
+```
+
+This installs the latest release into `/Applications`. The cask always points
+at the newest release, so a plain `brew upgrade` does not notice new ones;
+`brew upgrade --greedy custom-calendar-url` fetches it. Releases are
+ad-hoc signed, not notarized: the cask removes the quarantine flag so macOS
+will open the app.
+
+Without Homebrew, download `CustomCalendarURL.zip` from the
+[latest release](https://github.com/jansim/apple-calendar-custom-url/releases/latest),
+unzip it and move `CustomCalendarURL.app` to `/Applications`. macOS will
+refuse to open it at first; allow it under System Settings › Privacy &
+Security › Open Anyway, or run
+`xattr -dr com.apple.quarantine /Applications/CustomCalendarURL.app`.
+Or build it yourself, below.
+
 ## Building
 
 Requires Xcode 26, for the macOS 26 SDK; CI builds on macOS 26 too. Runs on
@@ -33,7 +55,7 @@ Calendar shows it next to the rooms in its video call menu.
 
 ## Using it
 
-1. Move `CustomCalendarURL.app` to `/Applications` and open it once, so the system
+1. Open `CustomCalendarURL.app` from `/Applications` once, so the system
    registers the extension.
 2. Enter a link, and optionally a name for it. Until you type one, the link
    goes by a short name read off its URL — `https://zoom.us/my/jane` shows as
@@ -55,6 +77,7 @@ the system has registered.
 | `Sources/CustomCalendarURL` | The settings app, and the `--selftest` suite |
 | `Sources/CustomCalendarURLExtension` | The `EKVirtualConferenceProvider` subclass |
 | `Resources/` | Both `Info.plist`s, the extension's entitlements, and both icons |
+| `Casks/` | The Homebrew cask, served from the [`jansim/homebrew-tap`](https://github.com/jansim/homebrew-tap) tap |
 
 The app writes the links, as JSON, to its own defaults. Each link has a
 fixed identifier, which is what Calendar hands back when it is picked, so
@@ -80,3 +103,10 @@ extension answers Calendar with, and — run from the built app — that the
 extension is embedded with the right extension point, class and identifiers.
 CI additionally verifies the signatures and entitlements, and that `pluginkit`
 accepts the extension.
+
+## Releasing
+
+Push a tag such as `v1.1`. The Release workflow builds the app with that
+version, runs `--selftest`, and publishes `CustomCalendarURL.zip` as a GitHub
+release. The cask installs whichever release is latest, so the tap needs no
+change per release.
