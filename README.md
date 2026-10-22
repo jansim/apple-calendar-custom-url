@@ -20,12 +20,12 @@ No third-party dependencies.
 With [Homebrew](https://brew.sh):
 
 ```bash
-brew install --cask jansim/tools/custom-calendar-url
+brew install --cask jansim/tools/apple-calendar-custom-url
 ```
 
 This installs the latest release into `/Applications`. The cask always points
 at the newest release, so a plain `brew upgrade` does not notice new ones;
-`brew upgrade --greedy custom-calendar-url` fetches it. Releases are
+`brew upgrade --greedy apple-calendar-custom-url` fetches it. Releases are
 ad-hoc signed, not notarized: the cask removes the quarantine flag so macOS
 will open the app.
 
